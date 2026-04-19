@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💣 炸弹猜数字游戏</title>
+    <title>💣 炸弹游戏</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -20,7 +20,7 @@
             align-items: center;
             padding: 20px;
         }
-        
+
         .container {
             background: white;
             border-radius: 20px;
@@ -29,160 +29,177 @@
             max-width: 500px;
             width: 100%;
         }
-        
+
         h1 {
             text-align: center;
             color: #667eea;
             margin-bottom: 30px;
             font-size: 2em;
         }
-        
+
         .input-group {
             margin-bottom: 20px;
         }
-        
+
         label {
             display: block;
             margin-bottom: 8px;
             color: #333;
-            font-weight: 600;
+            font-weight: 500;
         }
-        
+
         input {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.3s;
         }
-        
+
         input:focus {
             outline: none;
             border-color: #667eea;
         }
-        
+
         button {
             width: 100%;
             padding: 15px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 18px;
-            font-weight: 600;
+            font-weight: bold;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s;
             margin-top: 10px;
         }
-        
+
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
         }
-        
+
         button:active {
             transform: translateY(0);
         }
-        
+
         .secondary-btn {
             background: #6c757d;
             margin-top: 10px;
         }
-        
-        .secondary-btn:hover {
-            box-shadow: 0 10px 20px rgba(108, 117, 125, 0.4);
+
+        #gameArea {
+            display: none;
         }
-        
-        .info-box {
+
+        .player-list {
             background: #f8f9fa;
             padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-        }
-        
-        .info-box p {
-            margin: 8px 0;
-            color: #495057;
-        }
-        
-        .player-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .player-item {
-            background: white;
-            padding: 10px;
-            margin: 5px 0;
             border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .player-item {
+            padding: 10px;
+            background: white;
+            margin: 8px 0;
+            border-radius: 6px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .player-item.eliminated {
-            opacity: 0.5;
+            background: #ffebee;
             text-decoration: line-through;
+            opacity: 0.6;
         }
-        
-        .history-item {
-            background: white;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
+
+        .player-item.current-turn {
+            background: #e3f2fd;
+            border: 2px solid #2196F3;
         }
-        
-        .bomb-icon {
-            font-size: 2em;
-            animation: bounce 1s infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .winner {
-            text-align: center;
-            font-size: 1.5em;
-            color: #28a745;
-            font-weight: bold;
-            margin: 20px 0;
-        }
-        
-        .loser {
-            text-align: center;
-            font-size: 1.5em;
-            color: #dc3545;
-            font-weight: bold;
-            margin: 20px 0;
-        }
-        
-        #gameArea, #judgeArea {
-            display: none;
-        }
-        
+
         .status-badge {
-            display: inline-block;
             padding: 4px 12px;
             border-radius: 12px;
-            font-size: 0.85em;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: bold;
         }
-        
+
         .status-alive {
-            background: #d4edda;
-            color: #155724;
+            background: #4caf50;
+            color: white;
         }
-        
+
         .status-dead {
-            background: #f8d7da;
-            color: #721c24;
+            background: #f44336;
+            color: white;
         }
-        
-        .floating-icons {
+
+        .history-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #fff3cd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .bomb-icon {
+            font-size: 3em;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .info-text {
+            text-align: center;
+            color: #666;
+            margin: 10px 0;
+        }
+
+        .room-code {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976d2;
+        }
+
+        .game-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .floating-buttons {
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -190,35 +207,55 @@
             flex-direction: column;
             gap: 10px;
         }
-        
-        .icon-btn {
-            width: 50px;
-            height: 50px;
+
+        .float-btn {
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             border: none;
             font-size: 24px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             transition: transform 0.2s;
         }
-        
-        .icon-btn:hover {
+
+        .float-btn:hover {
             transform: scale(1.1);
+        }
+
+        .bomb-type-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .real-bomb {
+            background: #ff5252;
+            color: white;
+        }
+
+        .fake-bomb {
+            background: #4caf50;
+            color: white;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 首页 -->
-        <div id="homePage">
-            <h1>💣 炸弹猜数字</h1>
-            <button onclick="showJudgeSetup()">🎮 我是裁判</button>
-            <button onclick="showPlayerJoin()" class="secondary-btn">👤 我是玩家</button>
+        <!-- 主菜单 -->
+        <div id="mainMenu">
+            <h1>💣 炸弹游戏</h1>
+            <button onclick="showRefereePanel()">🎮 我是裁判</button>
+            <button onclick="showPlayerPanel()">👤 我是玩家</button>
         </div>
 
-        <!-- 裁判设置 -->
-        <div id="judgeSetup" style="display:none;">
+        <!-- 裁判面板 -->
+        <div id="refereePanel" class="hidden">
             <h1>🎯 裁判控制台</h1>
             <div class="input-group">
                 <label>数字范围最小值：</label>
@@ -229,72 +266,102 @@
                 <input type="number" id="maxValue" value="200">
             </div>
             <button onclick="createRoom()">创建房间</button>
-            <button onclick="backToHome()" class="secondary-btn">返回首页</button>
+            <button class="secondary-btn" onclick="backToMenu()">返回首页</button>
         </div>
 
-        <!-- 裁判游戏区 -->
-        <div id="judgeArea">
-            <h1>🎯 裁判控制台</h1>
-            <div class="info-box">
-                <p><strong>房间号：</strong><span id="judgeRoomCode"></span></p>
-                <p><strong>炸弹数字：</strong><span id="bombNumber"></span></p>
-                <p><strong>当前范围：</strong><span id="judgeCurrentRange"></span></p>
-            </div>
-            
-            <h3>玩家列表：</h3>
-            <ul id="judgePlayerList" class="player-list"></ul>
-            
-            <h3>游戏历史：</h3>
-            <div id="judgeHistory"></div>
-            
-            <button onclick="nextRound()">下一局</button>
-            <button onclick="endGame()" class="secondary-btn">结束游戏</button>
-        </div>
-
-        <!-- 玩家加入 -->
-        <div id="playerJoin" style="display:none;">
+        <!-- 玩家面板 -->
+        <div id="playerPanel" class="hidden">
             <h1>👤 加入游戏</h1>
             <div class="input-group">
-                <label>你的昵称：</label>
-                <input type="text" id="playerName" placeholder="输入昵称">
+                <label>输入房间号：</label>
+                <input type="text" id="roomCodeInput" placeholder="例如：ABC123">
             </div>
             <div class="input-group">
-                <label>房间号：</label>
-                <input type="text" id="roomCode" placeholder="输入6位房间号">
+                <label>你的昵称：</label>
+                <input type="text" id="playerName" placeholder="输入你的名字">
             </div>
             <button onclick="joinRoom()">加入房间</button>
-            <button onclick="backToHome()" class="secondary-btn">返回首页</button>
+            <button class="secondary-btn" onclick="backToMenu()">返回首页</button>
         </div>
 
-        <!-- 玩家游戏区 -->
-        <div id="gameArea">
-            <h1>💣 炸弹猜数字</h1>
-            <div class="info-box">
-                <p><strong>房间号：</strong><span id="playerRoomCode"></span></p>
-                <p><strong>你的昵称：</strong><span id="currentPlayerName"></span></p>
-                <p><strong>当前范围：</strong><span id="currentRange"></span></p>
-                <p><strong>你的状态：</strong><span id="playerStatus"></span></p>
+        <!-- 裁判游戏界面 -->
+        <div id="refereeGameArea" class="hidden">
+            <h1>🎯 裁判控制台</h1>
+            <div class="room-code">房间号：<span id="refereeRoomCode"></span></div>
+            
+            <div class="game-stats">
+                <div class="stat-box">
+                    <div class="stat-label">当前回合</div>
+                    <div class="stat-value" id="refereeRound">1</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">存活人数</div>
+                    <div class="stat-value" id="refereeAliveCount">0</div>
+                </div>
+            </div>
+
+            <div class="bomb-icon">💣</div>
+            <div class="info-text">
+                真实炸弹数字：<span id="refereeBombNumber" style="font-size: 2em; color: #f44336; font-weight: bold;">?</span>
+                <span id="refereeBombType" class="bomb-type-badge"></span>
             </div>
             
-            <div class="input-group" id="guessInputGroup">
+            <div class="player-list">
+                <h3>玩家列表</h3>
+                <div id="refereePlayerList"></div>
+            </div>
+
+            <div class="player-list">
+                <h3>游戏历史</h3>
+                <div id="refereeHistory"></div>
+            </div>
+
+            <button onclick="nextRound()">下一局</button>
+            <button class="secondary-btn" onclick="endGame()">结束游戏</button>
+        </div>
+
+        <!-- 玩家游戏界面 -->
+        <div id="playerGameArea" class="hidden">
+            <h1>💣 炸弹游戏</h1>
+            <div class="room-code">房间号：<span id="playerRoomCode"></span></div>
+            
+            <div class="game-stats">
+                <div class="stat-box">
+                    <div class="stat-label">当前回合</div>
+                    <div class="stat-value" id="playerRound">1</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">数字范围</div>
+                    <div class="stat-value" id="playerRange">1-100</div>
+                </div>
+            </div>
+
+            <div class="bomb-icon">💣</div>
+            <div class="info-text" id="turnInfo">等待其他玩家...</div>
+            
+            <div class="input-group">
                 <label>输入你的猜测：</label>
-                <input type="number" id="guessNumber">
-                <button onclick="submitGuess()">提交猜测</button>
+                <input type="number" id="guessInput" placeholder="输入一个数字">
             </div>
-            
-            <h3>玩家列表：</h3>
-            <ul id="playerList" class="player-list"></ul>
-            
-            <h3>游戏历史：</h3>
-            <div id="gameHistory"></div>
-            
-            <button onclick="leaveRoom()" class="secondary-btn">离开房间</button>
+            <button onclick="submitGuess()">提交猜测</button>
+
+            <div class="player-list">
+                <h3>玩家列表</h3>
+                <div id="playerList"></div>
+            </div>
+
+            <div class="player-list">
+                <h3>游戏历史</h3>
+                <div id="playerHistory"></div>
+            </div>
+
+            <button class="secondary-btn" onclick="leaveRoom()">离开房间</button>
         </div>
     </div>
 
-    <div class="floating-icons">
-        <button class="icon-btn" onclick="toggleSound()">🔊</button>
-        <button class="icon-btn" onclick="showRules()">❓</button>
+    <div class="floating-buttons">
+        <button class="float-btn" onclick="location.reload()" title="刷新页面">🔄</button>
+        <button class="float-btn" onclick="backToMenu()" title="返回首页">🏠</button>
     </div>
 
     <!-- Firebase SDK -->
@@ -302,344 +369,336 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <script>
-        // Firebase 配置 - 修复了 databaseURL
+        // Firebase 配置
         const firebaseConfig = {
-            apiKey: "AIzaSyDLKYWJEhBtI-1XBUTfVQYlmqLlPJhMx5I",
+            apiKey: "AIzaSyDac8TnWxR0-lC_MX2Vv5qYxqpZqJfLbQI",
             authDomain: "bomb-4eb10.firebaseapp.com",
             databaseURL: "https://bomb-4eb10-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "bomb-4eb10",
             storageBucket: "bomb-4eb10.firebasestorage.app",
-            messagingSenderId: "1009846990722",
-            appId: "1:1009846990722:web:d0d6a8c8c7b0b5d0c8c8c8"
+            messagingSenderId: "1068196672467",
+            appId: "1:1068196672467:web:b1b4a7f4c1c1e1e1e1e1e1"
         };
 
-        // 初始化 Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
         let currentRoom = null;
         let currentPlayer = null;
-        let isJudge = false;
-
-        // 显示裁判设置
-        function showJudgeSetup() {
-            document.getElementById('homePage').style.display = 'none';
-            document.getElementById('judgeSetup').style.display = 'block';
-        }
-
-        // 显示玩家加入
-        function showPlayerJoin() {
-            document.getElementById('homePage').style.display = 'none';
-            document.getElementById('playerJoin').style.display = 'block';
-        }
-
-        // 返回首页
-        function backToHome() {
-            document.getElementById('judgeSetup').style.display = 'none';
-            document.getElementById('playerJoin').style.display = 'none';
-            document.getElementById('homePage').style.display = 'block';
-        }
+        let isReferee = false;
 
         // 生成房间号
         function generateRoomCode() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        // 生成炸弹数字（带真弹哑弹机制）
+        function generateBombNumber(min, max) {
+            const isRealBomb = Math.random() < 0.7; // 70% 概率是真弹
+            const number = Math.floor(Math.random() * (max - min + 1)) + min;
+            return { number, isRealBomb };
+        }
+
+        // 显示面板
+        function showRefereePanel() {
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('refereePanel').classList.remove('hidden');
+        }
+
+        function showPlayerPanel() {
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('playerPanel').classList.remove('hidden');
+        }
+
+        function backToMenu() {
+            document.querySelectorAll('.container > div').forEach(div => div.classList.add('hidden'));
+            document.getElementById('mainMenu').classList.remove('hidden');
+            if (currentRoom) {
+                if (isReferee) {
+                    database.ref('rooms/' + currentRoom).remove();
+                } else if (currentPlayer) {
+                    database.ref('rooms/' + currentRoom + '/players/' + currentPlayer).remove();
+                }
+            }
+            currentRoom = null;
+            currentPlayer = null;
+            isReferee = false;
         }
 
         // 创建房间
         function createRoom() {
-            const minValue = parseInt(document.getElementById('minValue').value);
-            const maxValue = parseInt(document.getElementById('maxValue').value);
+            const min = parseInt(document.getElementById('minValue').value);
+            const max = parseInt(document.getElementById('maxValue').value);
             
-            if (minValue >= maxValue) {
+            if (min >= max) {
                 alert('最小值必须小于最大值！');
                 return;
             }
-            
+
             const roomCode = generateRoomCode();
-            const bombNumber = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
+            const bombData = generateBombNumber(min, max);
             
-            const roomData = {
-                minValue: minValue,
-                maxValue: maxValue,
-                bombNumber: bombNumber,
-                currentMin: minValue,
-                currentMax: maxValue,
+            database.ref('rooms/' + roomCode).set({
+                minValue: min,
+                maxValue: max,
+                bombNumber: bombData.number,
+                isRealBomb: bombData.isRealBomb,
+                round: 1,
                 players: {},
                 currentRound: {
-                    history: [],
-                    loser: null
+                    history: []
                 },
-                gameStatus: 'waiting'
-            };
-            
-            database.ref('rooms/' + roomCode).set(roomData).then(() => {
+                createdAt: Date.now()
+            }).then(() => {
                 currentRoom = roomCode;
-                isJudge = true;
-                showJudgeArea(roomCode, bombNumber);
-                listenToRoom(roomCode);
+                isReferee = true;
+                document.getElementById('refereePanel').classList.add('hidden');
+                document.getElementById('refereeGameArea').classList.remove('hidden');
+                document.getElementById('refereeRoomCode').textContent = roomCode;
+                document.getElementById('refereeBombNumber').textContent = bombData.number;
+                
+                const bombTypeSpan = document.getElementById('refereeBombType');
+                if (bombData.isRealBomb) {
+                    bombTypeSpan.textContent = '真弹';
+                    bombTypeSpan.className = 'bomb-type-badge real-bomb';
+                } else {
+                    bombTypeSpan.textContent = '哑弹';
+                    bombTypeSpan.className = 'bomb-type-badge fake-bomb';
+                }
+                
+                listenToRoomUpdates();
             });
-        }
-
-        // 显示裁判区域
-        function showJudgeArea(roomCode, bombNumber) {
-            document.getElementById('judgeSetup').style.display = 'none';
-            document.getElementById('judgeArea').style.display = 'block';
-            document.getElementById('judgeRoomCode').textContent = roomCode;
-            document.getElementById('bombNumber').textContent = bombNumber;
         }
 
         // 加入房间
         function joinRoom() {
+            const roomCode = document.getElementById('roomCodeInput').value.toUpperCase().trim();
             const playerName = document.getElementById('playerName').value.trim();
-            const roomCode = document.getElementById('roomCode').value.trim();
             
-            if (!playerName) {
-                alert('请输入昵称！');
+            if (!roomCode || !playerName) {
+                alert('请输入房间号和昵称！');
                 return;
             }
-            
-            if (roomCode.length !== 6) {
-                alert('请输入6位房间号！');
-                return;
-            }
-            
-            database.ref('rooms/' + roomCode).once('value').then((snapshot) => {
+
+            database.ref('rooms/' + roomCode).once('value', (snapshot) => {
                 if (!snapshot.exists()) {
                     alert('房间不存在！');
                     return;
                 }
-                
-                const playerId = Date.now().toString();
-                currentPlayer = {
-                    id: playerId,
-                    name: playerName
-                };
-                currentRoom = roomCode;
-                
+
+                const playerId = 'player_' + Date.now();
                 database.ref('rooms/' + roomCode + '/players/' + playerId).set({
                     name: playerName,
                     status: 'alive',
-                    joinTime: Date.now()
+                    joinedAt: Date.now()
                 }).then(() => {
-                    showGameArea(roomCode, playerName);
-                    listenToRoom(roomCode);
+                    currentRoom = roomCode;
+                    currentPlayer = playerId;
+                    document.getElementById('playerPanel').classList.add('hidden');
+                    document.getElementById('playerGameArea').classList.remove('hidden');
+                    document.getElementById('playerRoomCode').textContent = roomCode;
+                    listenToRoomUpdates();
                 });
             });
         }
 
-        // 显示游戏区域
-        function showGameArea(roomCode, playerName) {
-            document.getElementById('playerJoin').style.display = 'none';
-            document.getElementById('gameArea').style.display = 'block';
-            document.getElementById('playerRoomCode').textContent = roomCode;
-            document.getElementById('currentPlayerName').textContent = playerName;
-        }
-
-        // 监听房间数据
-        function listenToRoom(roomCode) {
-            database.ref('rooms/' + roomCode).on('value', (snapshot) => {
+        // 监听房间更新
+        function listenToRoomUpdates() {
+            database.ref('rooms/' + currentRoom).on('value', (snapshot) => {
                 const roomData = snapshot.val();
-                if (!roomData) return;
-                
-                updateGameDisplay(roomData);
+                if (!roomData) {
+                    alert('房间已关闭！');
+                    backToMenu();
+                    return;
+                }
+
+                if (isReferee) {
+                    updateRefereeView(roomData);
+                } else {
+                    updatePlayerView(roomData);
+                }
             });
         }
 
-        // 更新游戏显示
-        function updateGameDisplay(roomData) {
-            const currentRange = `${roomData.currentMin} - ${roomData.currentMax}`;
+        // 更新裁判视图
+        function updateRefereeView(roomData) {
+            document.getElementById('refereeRound').textContent = roomData.round;
             
-            if (isJudge) {
-                document.getElementById('judgeCurrentRange').textContent = currentRange;
-                updatePlayerList('judgePlayerList', roomData.players);
-                updateHistory('judgeHistory', roomData.currentRound.history || []);
-            } else {
-                document.getElementById('currentRange').textContent = currentRange;
-                updatePlayerList('playerList', roomData.players);
-                updateHistory('gameHistory', roomData.currentRound.history || []);
-                updatePlayerStatus(roomData);
-            }
-        }
+            const players = roomData.players || {};
+            const aliveCount = Object.values(players).filter(p => p.status === 'alive').length;
+            document.getElementById('refereeAliveCount').textContent = aliveCount;
 
-        // 更新玩家列表
-        function updatePlayerList(elementId, players) {
-            const listElement = document.getElementById(elementId);
-            listElement.innerHTML = '';
-            
-            for (let playerId in players) {
-                const player = players[playerId];
-                const li = document.createElement('li');
-                li.className = 'player-item';
-                if (player.status === 'dead') {
-                    li.classList.add('eliminated');
-                }
-                
-                li.innerHTML = `
+            const playerListDiv = document.getElementById('refereePlayerList');
+            playerListDiv.innerHTML = '';
+            Object.entries(players).forEach(([id, player]) => {
+                const div = document.createElement('div');
+                div.className = 'player-item' + (player.status === 'dead' ? ' eliminated' : '');
+                div.innerHTML = `
                     <span>${player.name}</span>
-                    <span class="status-badge status-${player.status}">
+                    <span class="status-badge ${player.status === 'alive' ? 'status-alive' : 'status-dead'}">
                         ${player.status === 'alive' ? '存活' : '淘汰'}
                     </span>
                 `;
-                listElement.appendChild(li);
-            }
-        }
+                playerListDiv.appendChild(div);
+            });
 
-        // 更新历史记录
-        function updateHistory(elementId, history) {
-            const historyElement = document.getElementById(elementId);
-            historyElement.innerHTML = '';
-            
-            const historyArray = history || [];
-            historyArray.forEach(record => {
+            const historyDiv = document.getElementById('refereeHistory');
+            historyDiv.innerHTML = '';
+            const history = roomData.currentRound?.history || [];
+            history.forEach(record => {
                 const div = document.createElement('div');
                 div.className = 'history-item';
-                div.innerHTML = `
-                    <strong>${record.playerName}</strong> 猜了 <strong>${record.guess}</strong>
-                    <br>范围缩小到：${record.newMin} - ${record.newMax}
-                `;
-                historyElement.appendChild(div);
+                div.textContent = record;
+                historyDiv.appendChild(div);
             });
         }
 
-        // 更新玩家状态
-        function updatePlayerStatus(roomData) {
-            if (!currentPlayer) return;
+        // 更新玩家视图
+        function updatePlayerView(roomData) {
+            document.getElementById('playerRound').textContent = roomData.round;
+            document.getElementById('playerRange').textContent = `${roomData.minValue}-${roomData.maxValue}`;
+
+            const players = roomData.players || {};
+            const currentPlayerData = players[currentPlayer];
             
-            const player = roomData.players[currentPlayer.id];
-            if (!player) return;
-            
-            const statusElement = document.getElementById('playerStatus');
-            const guessInputGroup = document.getElementById('guessInputGroup');
-            
-            if (player.status === 'alive') {
-                statusElement.innerHTML = '<span class="status-badge status-alive">存活</span>';
-                guessInputGroup.style.display = 'block';
+            if (currentPlayerData && currentPlayerData.status === 'dead') {
+                document.getElementById('turnInfo').textContent = '💀 你已被淘汰';
+                document.getElementById('guessInput').disabled = true;
             } else {
-                statusElement.innerHTML = '<span class="status-badge status-dead">已淘汰</span>';
-                guessInputGroup.style.display = 'none';
+                document.getElementById('turnInfo').textContent = '轮到你了！输入你的猜测';
+                document.getElementById('guessInput').disabled = false;
             }
-            
-            // 检查是否有输家
-            if (roomData.currentRound.loser === currentPlayer.id) {
-                alert('💣 你踩到炸弹了！');
-            }
+
+            const playerListDiv = document.getElementById('playerList');
+            playerListDiv.innerHTML = '';
+            Object.entries(players).forEach(([id, player]) => {
+                const div = document.createElement('div');
+                div.className = 'player-item' + (player.status === 'dead' ? ' eliminated' : '');
+                if (id === currentPlayer) {
+                    div.classList.add('current-turn');
+                }
+                div.innerHTML = `
+                    <span>${player.name} ${id === currentPlayer ? '(你)' : ''}</span>
+                    <span class="status-badge ${player.status === 'alive' ? 'status-alive' : 'status-dead'}">
+                        ${player.status === 'alive' ? '存活' : '淘汰'}
+                    </span>
+                `;
+                playerListDiv.appendChild(div);
+            });
+
+            const historyDiv = document.getElementById('playerHistory');
+            historyDiv.innerHTML = '';
+            const history = roomData.currentRound?.history || [];
+            history.forEach(record => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.textContent = record;
+                historyDiv.appendChild(div);
+            });
         }
 
         // 提交猜测
         function submitGuess() {
-            if (!currentRoom || !currentPlayer) return;
+            const guess = parseInt(document.getElementById('guessInput').value);
             
-            const guess = parseInt(document.getElementById('guessNumber').value);
-            
-            database.ref('rooms/' + currentRoom).once('value').then((snapshot) => {
+            if (isNaN(guess)) {
+                alert('请输入有效的数字！');
+                return;
+            }
+
+            database.ref('rooms/' + currentRoom).once('value', (snapshot) => {
                 const roomData = snapshot.val();
+                const player = roomData.players[currentPlayer];
                 
-                if (guess < roomData.currentMin || guess > roomData.currentMax) {
-                    alert(`请输入 ${roomData.currentMin} 到 ${roomData.currentMax} 之间的数字！`);
+                if (player.status === 'dead') {
+                    alert('你已被淘汰，无法继续猜测！');
                     return;
                 }
-                
-                const player = roomData.players[currentPlayer.id];
-                if (player.status !== 'alive') {
-                    alert('你已经被淘汰了！');
+
+                if (guess < roomData.minValue || guess > roomData.maxValue) {
+                    alert(`请输入 ${roomData.minValue} 到 ${roomData.maxValue} 之间的数字！`);
                     return;
                 }
-                
-                // 检查是否踩到炸弹
-                if (guess === roomData.bombNumber) {
-                    // 踩到炸弹
-                    database.ref('rooms/' + currentRoom + '/players/' + currentPlayer.id + '/status').set('dead');
-                    database.ref('rooms/' + currentRoom + '/currentRound/loser').set(currentPlayer.id);
-                    
-                    const newHistory = roomData.currentRound.history || [];
-                    newHistory.push({
-                        playerName: player.name,
-                        guess: guess,
-                        newMin: roomData.currentMin,
-                        newMax: roomData.currentMax,
-                        hitBomb: true
-                    });
-                    database.ref('rooms/' + currentRoom + '/currentRound/history').set(newHistory);
-                } else {
-                    // 没踩到炸弹，缩小范围
-                    let newMin = roomData.currentMin;
-                    let newMax = roomData.currentMax;
-                    
-                    if (guess < roomData.bombNumber) {
-                        newMin = guess + 1;
+
+                const bombNumber = roomData.bombNumber;
+                const isRealBomb = roomData.isRealBomb;
+                let message = '';
+                let shouldEliminate = false;
+
+                if (guess === bombNumber) {
+                    if (isRealBomb) {
+                        message = `💥 ${player.name} 猜了 ${guess}，踩到真弹！被淘汰！`;
+                        shouldEliminate = true;
                     } else {
-                        newMax = guess - 1;
+                        message = `😅 ${player.name} 猜了 ${guess}，是哑弹！安全！`;
                     }
-                    
-                    database.ref('rooms/' + currentRoom + '/currentMin').set(newMin);
-                    database.ref('rooms/' + currentRoom + '/currentMax').set(newMax);
-                    
-                    const newHistory = roomData.currentRound.history || [];
-                    newHistory.push({
-                        playerName: player.name,
-                        guess: guess,
-                        newMin: newMin,
-                        newMax: newMax,
-                        hitBomb: false
-                    });
-                    database.ref('rooms/' + currentRoom + '/currentRound/history').set(newHistory);
+                } else {
+                    message = `${player.name} 猜了 ${guess}，安全通过`;
                 }
+
+                const updates = {};
+                const history = roomData.currentRound?.history || [];
+                history.push(message);
+                updates['currentRound/history'] = history;
                 
-                document.getElementById('guessNumber').value = '';
+                if (shouldEliminate) {
+                    updates['players/' + currentPlayer + '/status'] = 'dead';
+                }
+
+                database.ref('rooms/' + currentRoom).update(updates).then(() => {
+                    document.getElementById('guessInput').value = '';
+                    if (shouldEliminate) {
+                        alert('💥 你踩到真弹了！');
+                    }
+                });
             });
         }
 
         // 下一局
         function nextRound() {
-            if (!currentRoom) return;
-            
-            database.ref('rooms/' + currentRoom).once('value').then((snapshot) => {
+            database.ref('rooms/' + currentRoom).once('value', (snapshot) => {
                 const roomData = snapshot.val();
-                const newBombNumber = Math.floor(Math.random() * (roomData.maxValue - roomData.minValue + 1)) + roomData.minValue;
+                const bombData = generateBombNumber(roomData.minValue, roomData.maxValue);
                 
                 database.ref('rooms/' + currentRoom).update({
-                    bombNumber: newBombNumber,
-                    currentMin: roomData.minValue,
-                    currentMax: roomData.maxValue,
-                    'currentRound/history': [],
-                    'currentRound/loser': null
+                    round: roomData.round + 1,
+                    bombNumber: bombData.number,
+                    isRealBomb: bombData.isRealBomb,
+                    currentRound: {
+                        history: []
+                    }
+                }).then(() => {
+                    document.getElementById('refereeBombNumber').textContent = bombData.number;
+                    const bombTypeSpan = document.getElementById('refereeBombType');
+                    if (bombData.isRealBomb) {
+                        bombTypeSpan.textContent = '真弹';
+                        bombTypeSpan.className = 'bomb-type-badge real-bomb';
+                    } else {
+                        bombTypeSpan.textContent = '哑弹';
+                        bombTypeSpan.className = 'bomb-type-badge fake-bomb';
+                    }
+                    alert('新一局开始！');
                 });
-                
-                document.getElementById('bombNumber').textContent = newBombNumber;
-                alert('新一局开始！炸弹数字：' + newBombNumber);
             });
-        }
-
-        // 离开房间
-        function leaveRoom() {
-            if (currentRoom && currentPlayer) {
-                database.ref('rooms/' + currentRoom + '/players/' + currentPlayer.id).remove();
-            }
-            currentRoom = null;
-            currentPlayer = null;
-            document.getElementById('gameArea').style.display = 'none';
-            document.getElementById('homePage').style.display = 'block';
         }
 
         // 结束游戏
         function endGame() {
-            if (currentRoom) {
-                database.ref('rooms/' + currentRoom).remove();
+            if (confirm('确定要结束游戏吗？')) {
+                database.ref('rooms/' + currentRoom).remove().then(() => {
+                    alert('游戏已结束！');
+                    backToMenu();
+                });
             }
-            currentRoom = null;
-            isJudge = false;
-            document.getElementById('judgeArea').style.display = 'none';
-            document.getElementById('homePage').style.display = 'block';
         }
 
-        // 切换声音
-        function toggleSound() {
-            alert('声音功能开发中...');
-        }
-
-        // 显示规则
-        function showRules() {
-            alert('游戏规则：\n1. 裁判设定数字范围并生成炸弹数字\n2. 玩家轮流猜测数字\n3. 猜测后范围会缩小\n4. 猜中炸弹数字的玩家淘汰\n5. 最后存活的玩家获胜');
+        // 离开房间
+        function leaveRoom() {
+            if (confirm('确定要离开房间吗？')) {
+                database.ref('rooms/' + currentRoom + '/players/' + currentPlayer).remove().then(() => {
+                    backToMenu();
+                });
+            }
         }
     </script>
 </body>
