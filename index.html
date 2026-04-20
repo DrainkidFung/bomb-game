@@ -500,11 +500,26 @@
         }
 
         // 生成炸弹（根据玩家数量决定真弹数量）
-        function generateBomb(min, max, playerCount) {
+        function generateBomb(min, max) {
             const number = Math.floor(Math.random() * (max - min + 1)) + min;
-            // 真弹数量 = 玩家数量 - 1
-            const realBombCount = Math.max(1, playerCount - 1);
-            return { number, realBombCount };
+            return number;
+        }
+
+        // 随机分配真弹局数
+        function generateBombRounds(totalRounds, realBombCount) {
+            const rounds = [];
+            for (let i = 1; i <= totalRounds; i++) {
+                rounds.push(i);
+            }
+            
+            // 随机打乱数组
+            for (let i = rounds.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [rounds[i], rounds[j]] = [rounds[j], rounds[i]];
+            }
+            
+            // 取前 realBombCount 个作为真弹局数
+            return rounds.slice(0, realBombCount).sort((a, b) => a - b);
         }
 
         // 显示页面
@@ -541,7 +556,7 @@
                 currentMin: min,
                 currentMax: max,
                 bomb: 0,
-                realBombsRemaining: 0,
+                bombRounds: [], // 存储哪些局是真弹
                 players: {},
                 gameStarted: false,
                 gameOver: false,
@@ -626,17 +641,28 @@
             }
 
             // 生成炸弹
-            const bombData = generateBomb(roomData.minRange, roomData.maxRange, playerCount);
+            const bomb = generateBomb(roomData.minRange, roomData.maxRange);
+            
+            // 真弹数量 = 玩家数量 - 1
+            const realBombCount = playerCount - 1;
+            
+            // 随机分配真弹到不同的局
+            const bombRounds = generateBombRounds(roomData.totalRounds, realBombCount);
+
+            console.log('真弹局数:', bombRounds);
 
             await update(roomRef, { 
                 gameStarted: true,
-                bomb: bombData.number,
-                realBombsRemaining: bombData.realBombCount
+                bomb: bomb,
+                bombRounds: bombRounds
             });
 
-            document.getElementById('bombNumber').textContent = bombData.number;
-            document.getElementById('bombType').textContent = `真弹剩余: ${bombData.realBombCount}`;
-            document.getElementById('bombType').className = 'bomb-type real';
+            // 判断第一局是真弹还是哑弹
+            const isRealBomb = bombRounds.includes(1);
+
+            document.getElementById('bombNumber').textContent = bomb;
+            document.getElementById('bombType').textContent = isRealBomb ? '真弹 💥' : '哑弹 🎉';
+            document.getElementById('bombType').className = `bomb-type ${isRealBomb ? 'real' : 'dummy'}`;
             document.getElementById('startGameBtn').style.display = 'none';
         };
 
@@ -728,10 +754,14 @@
             // 检查是否猜中炸弹
             if (guess === roomData.bomb) {
                 const history = roomData.history || [];
+                
+                // 判断当前局是真弹还是哑弹
+                const isRealBomb = roomData.bombRounds.includes(roomData.currentRound);
+                
                 history.push({
                     player: currentPlayer.name,
                     guess: guess,
-                    result: '💥 踩到炸弹！',
+                    result: isRealBomb ? '💥 踩到真弹！' : '🎉 踩到哑弹！',
                     time: Date.now()
                 });
 
@@ -740,10 +770,9 @@
                     gameOver: true
                 };
 
-                // 如果还有真弹，淘汰玩家
-                if (roomData.realBombsRemaining > 0) {
+                // 如果是真弹，淘汰玩家
+                if (isRealBomb) {
                     updates[`players/${currentPlayer.id}/eliminated`] = true;
-                    updates.realBombsRemaining = roomData.realBombsRemaining - 1;
                 }
 
                 await update(roomRef, updates);
@@ -806,23 +835,26 @@
             }
 
             // 生成新炸弹
-            const bombData = generateBomb(roomData.minRange, roomData.maxRange, activePlayers.length);
+            const bomb = generateBomb(roomData.minRange, roomData.maxRange);
 
             await update(roomRef, {
                 currentRound: newRound,
                 pool: newPool,
                 currentMin: roomData.minRange,
                 currentMax: roomData.maxRange,
-                bomb: bombData.number,
-                realBombsRemaining: bombData.realBombCount,
+                bomb: bomb,
                 gameStarted: true,
                 gameOver: false,
                 history: [],
                 currentTurnIndex: 0
             });
 
-            document.getElementById('bombNumber').textContent = bombData.number;
-            document.getElementById('bombType').textContent = `真弹剩余: ${bombData.realBombCount}`;
+            // 判断新一局是真弹还是哑弹
+            const isRealBomb = roomData.bombRounds.includes(newRound);
+
+            document.getElementById('bombNumber').textContent = bomb;
+            document.getElementById('bombType').textContent = isRealBomb ? '真弹 💥' : '哑弹 🎉';
+            document.getElementById('bombType').className = `bomb-type ${isRealBomb ? 'real' : 'dummy'}`;
             document.getElementById('nextRoundBtn').style.display = 'none';
         };
 
@@ -916,7 +948,8 @@
             }
 
             if (roomData.gameOver) {
-                const message = roomData.realBombsRemaining > 0 ? 
+                const isRealBomb = roomData.bombRounds.includes(roomData.currentRound);
+                const message = isRealBomb ? 
                     '💥 本局结束！有人踩到真弹被淘汰了！' : 
                     '🎉 本局结束！这是哑弹！';
                 indicator.innerHTML = `<div class="success-message">${message}</div>`;
