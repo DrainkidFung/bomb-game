@@ -28,6 +28,108 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             max-width: 600px;
             width: 100%;
+            position: relative;
+        }
+
+        .info-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .info-btn:hover {
+            background: #764ba2;
+            transform: scale(1.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #f44336;
+            color: white;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .rule-section {
+            margin-bottom: 20px;
+        }
+
+        .rule-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .rule-section p, .rule-section ul {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .rule-section ul {
+            padding-left: 20px;
+        }
+
+        .rule-section li {
+            margin-bottom: 8px;
         }
 
         .title {
@@ -338,6 +440,8 @@
 </head>
 <body>
     <div class="container" id="app">
+        <button class="info-btn" onclick="showRules()" title="游戏规则">ⓘ</button>
+
         <!-- 首页 -->
         <div id="homePage">
             <div class="title">
@@ -473,6 +577,71 @@
         </div>
     </div>
 
+    <!-- 游戏规则弹窗 -->
+    <div class="modal" id="rulesModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeRules()">×</button>
+            <div class="modal-title">📖 游戏规则</div>
+            
+            <div class="rule-section">
+                <h3>🎯 游戏目标</h3>
+                <p>在15局游戏中存活下来，或者在合适的时机离场获取奖励！</p>
+            </div>
+
+            <div class="rule-section">
+                <h3>🎮 游戏流程</h3>
+                <ul>
+                    <li><strong>创建房间：</strong>裁判设置数字范围并创建房间</li>
+                    <li><strong>玩家加入：</strong>玩家输入房间号和昵称加入游戏</li>
+                    <li><strong>开始游戏：</strong>裁判等待玩家加入后开始游戏（至少2人）</li>
+                    <li><strong>轮流猜测：</strong>玩家按加入顺序轮流猜测数字</li>
+                    <li><strong>范围缩小：</strong>每次猜测后，数字范围会缩小</li>
+                    <li><strong>踩到炸弹：</strong>猜中炸弹数字，本局结束</li>
+                </ul>
+            </div>
+
+            <div class="rule-section">
+                <h3>💣 真弹与哑弹</h3>
+                <ul>
+                    <li><strong>真弹数量：</strong>玩家数量 - 1（例如6人游戏有5个真弹）</li>
+                    <li><strong>随机分配：</strong>真弹随机分配到15局中</li>
+                    <li><strong>踩到真弹：</strong>玩家被淘汰，无法继续游戏</li>
+                    <li><strong>踩到哑弹：</strong>玩家安全，游戏继续</li>
+                </ul>
+            </div>
+
+            <div class="rule-section">
+                <h3>💰 奖池系统</h3>
+                <ul>
+                    <li><strong>初始奖池：</strong>10套仓库用品</li>
+                    <li><strong>奖池累加：</strong>每局奖池 = 上一局奖池 + 5×(当前局数-1)</li>
+                    <li><strong>离场奖励：</strong>当前奖池 ÷ 存活玩家数</li>
+                    <li><strong>最终奖励：</strong>15局结束后，存活玩家平分奖池</li>
+                </ul>
+            </div>
+
+            <div class="rule-section">
+                <h3>⚠️ 重要规则</h3>
+                <ul>
+                    <li>玩家只能猜测范围内的数字（不包括边界）</li>
+                    <li>当范围只剩一个数字时，下一个玩家必定踩雷</li>
+                    <li>被淘汰的玩家无法获得任何奖励</li>
+                    <li>离场的玩家立即获得奖励并退出游戏</li>
+                </ul>
+            </div>
+
+            <div class="rule-section">
+                <h3>🎲 策略提示</h3>
+                <ul>
+                    <li>观察真弹出现的频率，判断当前局的风险</li>
+                    <li>范围越小，风险越大，可以考虑离场</li>
+                    <li>后期奖池更高，但风险也更大</li>
+                    <li>合理选择猜测数字，避免给下一个玩家留下必死局</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getDatabase, ref, set, get, onValue, push, update, remove } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
@@ -493,6 +662,15 @@
         let currentRoom = null;
         let currentPlayer = null;
         let isReferee = false;
+
+        // 显示游戏规则
+        window.showRules = function() {
+            document.getElementById('rulesModal').classList.add('show');
+        };
+
+        window.closeRules = function() {
+            document.getElementById('rulesModal').classList.remove('show');
+        };
 
         // 生成6位房间号
         function generateRoomCode() {
@@ -746,8 +924,36 @@
                 return;
             }
 
-            if (isNaN(guess) || guess < roomData.currentMin || guess > roomData.currentMax) {
-                alert(`请输入 ${roomData.currentMin} 到 ${roomData.currentMax} 之间的数字！`);
+            // 检查范围是否只剩一个数字（必死局）
+            if (roomData.currentMax - roomData.currentMin <= 1) {
+                // 自动踩雷
+                const isRealBomb = roomData.bombRounds.includes(roomData.currentRound);
+                
+                const history = roomData.history || [];
+                history.push({
+                    player: currentPlayer.name,
+                    guess: roomData.bomb,
+                    result: isRealBomb ? '💥 无路可逃，踩到真弹！' : '🎉 无路可逃，踩到哑弹！',
+                    time: Date.now()
+                });
+
+                const updates = {
+                    history: history,
+                    gameOver: true
+                };
+
+                if (isRealBomb) {
+                    updates[`players/${currentPlayer.id}/eliminated`] = true;
+                }
+
+                await update(roomRef, updates);
+                document.getElementById('guessInput').value = '';
+                return;
+            }
+
+            // 验证输入（不能等于边界值）
+            if (isNaN(guess) || guess <= roomData.currentMin || guess >= roomData.currentMax) {
+                alert(`请输入 ${roomData.currentMin} 和 ${roomData.currentMax} 之间的数字（不包括边界）！`);
                 return;
             }
 
@@ -919,8 +1125,18 @@
                     const currentTurnPlayerId = alivePlayers[roomData.currentTurnIndex % alivePlayers.length][0];
                     const isMyTurn = currentTurnPlayerId === currentPlayer.id;
                     
-                    guessBtn.disabled = !isMyTurn;
-                    guessInput.disabled = false;
+                    // 检查是否是必死局
+                    const isForcedBomb = roomData.currentMax - roomData.currentMin <= 1;
+                    
+                    if (isForcedBomb && isMyTurn) {
+                        guessBtn.textContent = '💥 必死局！';
+                        guessInput.disabled = true;
+                    } else {
+                        guessBtn.textContent = '提交';
+                        guessBtn.disabled = !isMyTurn;
+                        guessInput.disabled = false;
+                    }
+                    
                     leaveBtn.disabled = false;
                 }
             }
@@ -963,8 +1179,15 @@
             const currentTurnPlayer = alivePlayers[roomData.currentTurnIndex % alivePlayers.length];
             const isMyTurn = currentTurnPlayer[0] === currentPlayer.id;
 
+            // 检查是否是必死局
+            const isForcedBomb = roomData.currentMax - roomData.currentMin <= 1;
+
             if (isMyTurn) {
-                indicator.innerHTML = '<div class="turn-indicator">🎯 轮到你了！</div>';
+                if (isForcedBomb) {
+                    indicator.innerHTML = '<div class="error-message">⚠️ 必死局！只能踩雷了...</div>';
+                } else {
+                    indicator.innerHTML = '<div class="turn-indicator">🎯 轮到你了！</div>';
+                }
             } else {
                 indicator.innerHTML = `<div class="waiting-message">⏳ 等待 ${currentTurnPlayer[1].name} 猜测...</div>`;
             }
