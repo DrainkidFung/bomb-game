@@ -55,6 +55,46 @@
             transform: scale(1.1);
         }
 
+        .spectator-toggle {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .spectator-toggle:hover {
+            background: #f57c00;
+        }
+
+        .spectator-list {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .spectator-list.show {
+            display: block;
+        }
+
+        .spectator-item {
+            padding: 8px;
+            background: white;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -230,6 +270,16 @@
             margin-left: 10px;
         }
 
+        .dissolve-btn {
+            background: #f44336;
+            margin-top: 10px;
+        }
+
+        .exit-room-btn {
+            background: #ff9800;
+            margin-top: 10px;
+        }
+
         .room-code {
             background: #f8f9fa;
             padding: 15px;
@@ -307,12 +357,6 @@
             opacity: 0.8;
         }
 
-        .player-item.spectator {
-            background: #fff3e0;
-            color: #f57c00;
-            opacity: 0.9;
-        }
-
         .player-item.current-turn {
             background: #e3f2fd;
             border: 2px solid #2196f3;
@@ -348,11 +392,6 @@
             font-weight: bold;
         }
 
-        .badge-referee {
-            background: #ffd700;
-            color: #000;
-        }
-
         .badge-eliminated {
             background: #f44336;
             color: white;
@@ -365,11 +404,6 @@
 
         .badge-left {
             background: #2196f3;
-            color: white;
-        }
-
-        .badge-spectator {
-            background: #ff9800;
             color: white;
         }
 
@@ -573,6 +607,11 @@
                 <div class="range-display" id="refereeRange"></div>
             </div>
 
+            <button class="spectator-toggle" onclick="toggleSpectators('referee')">
+                👁️ 观战人员 (<span id="refereeSpectatorCount">0</span>)
+            </button>
+            <div class="spectator-list" id="refereeSpectatorList"></div>
+
             <div class="player-list">
                 <h3>玩家列表:</h3>
                 <div id="refereePlayerList"></div>
@@ -580,6 +619,7 @@
 
             <button onclick="startGame()" id="startGameBtn">开始游戏</button>
             <button onclick="nextRound()" id="nextRoundBtn" style="display:none;" class="secondary-btn">进行下一局</button>
+            <button onclick="dissolveRoom()" class="dissolve-btn">解散房间</button>
             
             <div class="history">
                 <h3>游戏记录:</h3>
@@ -613,6 +653,11 @@
 
             <div id="turnIndicator"></div>
 
+            <button class="spectator-toggle" onclick="toggleSpectators('player')">
+                👁️ 观战人员 (<span id="playerSpectatorCount">0</span>)
+            </button>
+            <div class="spectator-list" id="playerSpectatorList"></div>
+
             <div class="input-group">
                 <label>猜测数字:</label>
                 <input type="number" id="guessInput" placeholder="输入你的猜测">
@@ -620,6 +665,7 @@
             <button onclick="submitGuess()" id="guessBtn">提交</button>
             <button onclick="leaveGame()" id="leaveBtn" class="leave-btn">💰 拿奖励离场</button>
             <button onclick="revivePlayer()" id="reviveBtn" class="revival-btn" style="display:none;">♻️ 复活（需要门票）</button>
+            <button onclick="exitRoom()" id="exitRoomBtn" class="exit-room-btn" style="display:none;">🚪 离开房间</button>
 
             <div class="player-list">
                 <h3>玩家列表:</h3>
@@ -682,7 +728,7 @@
                 <ul>
                     <li><strong>复活时机：</strong>第11局开始前可以复活</li>
                     <li><strong>复活次数：</strong>每个玩家最多复活2次</li>
-                    <li><strong>复活门票：</strong>max(当前奖池÷存活玩家数, 基础门票×2)</li>
+                    <li><strong>复活门票：</strong>max(基础门票×2, 当前奖池÷存活玩家数)</li>
                     <li><strong>门票扣除：</strong>复活后从奖池中扣除相应门票</li>
                 </ul>
             </div>
@@ -693,6 +739,7 @@
                     <li>观战玩家可以看到游戏进程，但不参与游戏</li>
                     <li>观战玩家无法猜测数字或获得奖励</li>
                     <li>观战玩家不影响真弹数量计算</li>
+                    <li>观战玩家可以随时离开房间</li>
                 </ul>
             </div>
 
@@ -702,7 +749,9 @@
                     <li>玩家只能猜测范围内的数字（不包括边界）</li>
                     <li>当范围只剩一个数字时，下一个玩家必定踩雷</li>
                     <li>裁判可以踢出重复进入的玩家</li>
+                    <li>裁判可以随时解散房间</li>
                     <li>刷新页面后会自动重新加入房间</li>
+                    <li>被踢出的玩家会自动返回首页</li>
                 </ul>
             </div>
         </div>
@@ -729,6 +778,7 @@
         let currentPlayer = null;
         let isReferee = false;
         let isJoining = false;
+        let roomListener = null;
 
         window.addEventListener('load', function() {
             const savedRoom = localStorage.getItem('bombGameRoom');
@@ -762,6 +812,12 @@
             document.getElementById('rulesModal').classList.remove('show');
         };
 
+        window.toggleSpectators = function(type) {
+            const listId = type === 'referee' ? 'refereeSpectatorList' : 'playerSpectatorList';
+            const list = document.getElementById(listId);
+            list.classList.toggle('show');
+        };
+
         function generateRoomCode() {
             return Math.random().toString(36).substring(2, 8).toUpperCase();
         }
@@ -792,9 +848,19 @@
         }
 
         window.showHome = function() {
+            // 停止监听
+            if (roomListener) {
+                roomListener();
+                roomListener = null;
+            }
+
             localStorage.removeItem('bombGameRoom');
             localStorage.removeItem('bombGamePlayer');
             localStorage.removeItem('bombGameIsReferee');
+            
+            currentRoom = null;
+            currentPlayer = null;
+            isReferee = false;
             
             document.querySelectorAll('.container > div').forEach(div => div.style.display = 'none');
             document.getElementById('homePage').style.display = 'block';
@@ -993,6 +1059,26 @@
             await remove(ref(database, `rooms/${currentRoom}/players/${playerId}`));
         };
 
+        window.dissolveRoom = async function() {
+            if (!currentRoom || !isReferee) return;
+            if (!confirm('确定要解散房间吗？所有玩家将被移除。')) return;
+            
+            await remove(ref(database, `rooms/${currentRoom}`));
+            
+            alert('房间已解散！');
+            showHome();
+        };
+
+        window.exitRoom = async function() {
+            if (!currentRoom || !currentPlayer) return;
+            
+            if (!confirm('确定要离开房间吗？')) return;
+            
+            await remove(ref(database, `rooms/${currentRoom}/players/${currentPlayer.id}`));
+            
+            showHome();
+        };
+
         window.startGame = async function() {
             if (!currentRoom) return;
 
@@ -1097,9 +1183,10 @@
                 return;
             }
 
+            // 修正：复活门票 = max(基础门票×2, 当前奖池÷存活玩家数)
             const activePlayers = Object.values(roomData.players).filter(p => !p.eliminated && !p.left && !p.spectator).length;
             const share = activePlayers > 0 ? Math.floor(roomData.pool / activePlayers) : 0;
-            const revivalTicket = Math.max(share, roomData.baseTicket * 2);
+            const revivalTicket = Math.max(roomData.baseTicket * 2, share);
 
             if (!confirm(`复活需要 ${revivalTicket} 套门票，确定复活吗？`)) {
                 return;
@@ -1293,9 +1380,25 @@
         function listenToRoom(roomCode) {
             const roomRef = ref(database, `rooms/${roomCode}`);
             
-            onValue(roomRef, (snapshot) => {
-                if (!snapshot.exists()) return;
+            roomListener = onValue(roomRef, (snapshot) => {
+                if (!snapshot.exists()) {
+                    // 房间被解散
+                    alert('房间已被解散！');
+                    showHome();
+                    return;
+                }
+                
                 const roomData = snapshot.val();
+                
+                // 检查玩家是否被踢出
+                if (!isReferee && currentPlayer) {
+                    if (!roomData.players || !roomData.players[currentPlayer.id]) {
+                        alert('你已被踢出房间！');
+                        showHome();
+                        return;
+                    }
+                }
+                
                 updateUI(roomData);
             });
         }
@@ -1306,12 +1409,19 @@
             const poolDisplay = `${roomData.pool}套`;
             const remainingBombs = roomData.bombRounds ? roomData.bombRounds.filter(r => r >= roomData.currentRound).length : 0;
 
+            // 更新观战人员列表
+            const spectators = Object.entries(roomData.players || {}).filter(([_, p]) => p.spectator);
+            
             if (isReferee) {
                 document.getElementById('refereeRange').textContent = range;
                 document.getElementById('refereeRoundDisplay').textContent = roundDisplay;
                 document.getElementById('refereePoolDisplay').textContent = poolDisplay;
                 document.getElementById('refereeTicketDisplay').textContent = `${roomData.baseTicket}套`;
                 document.getElementById('refereeBombDisplay').textContent = remainingBombs;
+                
+                document.getElementById('refereeSpectatorCount').textContent = spectators.length;
+                updateSpectatorList('refereeSpectatorList', spectators);
+                
                 updatePlayerList('refereePlayerList', roomData.players, roomData.currentTurnIndex, roomData.pool, roomData.baseTicket, true);
                 updateHistory('refereeHistory', roomData.history);
                 
@@ -1322,6 +1432,10 @@
                 document.getElementById('playerRange').textContent = range;
                 document.getElementById('playerRoundDisplay').textContent = roundDisplay;
                 document.getElementById('playerPoolDisplay').textContent = poolDisplay;
+                
+                document.getElementById('playerSpectatorCount').textContent = spectators.length;
+                updateSpectatorList('playerSpectatorList', spectators);
+                
                 updatePlayerList('playerList', roomData.players, roomData.currentTurnIndex, roomData.pool, roomData.baseTicket, false);
                 updateHistory('playerHistory', roomData.history);
                 updateTurnIndicator(roomData);
@@ -1330,12 +1444,21 @@
                 const guessInput = document.getElementById('guessInput');
                 const leaveBtn = document.getElementById('leaveBtn');
                 const reviveBtn = document.getElementById('reviveBtn');
+                const exitRoomBtn = document.getElementById('exitRoomBtn');
                 
                 const playerData = currentPlayer ? roomData.players[currentPlayer.id] : null;
                 const isEliminated = playerData?.eliminated || false;
                 const hasLeft = playerData?.left || false;
                 const isSpectator = playerData?.spectator || false;
                 
+                // 显示离开房间按钮（观战、淘汰、离场的玩家）
+                if (isSpectator || isEliminated || hasLeft) {
+                    exitRoomBtn.style.display = 'block';
+                } else {
+                    exitRoomBtn.style.display = 'none';
+                }
+                
+                // 显示复活按钮
                 if (isEliminated && roomData.currentRound < 11 && playerData.revivalCount < 2) {
                     reviveBtn.style.display = 'block';
                 } else {
@@ -1371,6 +1494,18 @@
                     leaveBtn.disabled = roomData.currentRound === roomData.totalRounds;
                 }
             }
+        }
+
+        function updateSpectatorList(elementId, spectators) {
+            const container = document.getElementById(elementId);
+            if (spectators.length === 0) {
+                container.innerHTML = '<div class="spectator-item">暂无观战人员</div>';
+                return;
+            }
+
+            container.innerHTML = spectators.map(([id, player]) => {
+                return `<div class="spectator-item">👁️ ${player.name}</div>`;
+            }).join('');
         }
 
         function updateTurnIndicator(roomData) {
@@ -1435,77 +1570,11 @@
                 return;
             }
 
-            const playerArray = Object.entries(players).sort((a, b) => a[1].joinTime - b[1].joinTime);
-            const alivePlayers = playerArray.filter(([_, p]) => !p.eliminated && !p.left && !p.spectator);
+            const playerArray = Object.entries(players)
+                .filter(([_, p]) => !p.spectator)
+                .sort((a, b) => a[1].joinTime - b[1].joinTime);
+
+            const alivePlayers = playerArray.filter(([_, p]) => !p.eliminated && !p.left);
             const currentTurnPlayerId = alivePlayers.length > 0 ? alivePlayers[currentTurnIndex % alivePlayers.length][0] : null;
             const share = alivePlayers.length > 0 ? Math.floor(pool / alivePlayers.length) : 0;
-            const canTake = Math.max(0, share - baseTicket);
-
-            container.innerHTML = playerArray.map(([id, player]) => {
-                const isCurrentTurn = id === currentTurnPlayerId;
-                const classes = ['player-item'];
-                if (player.eliminated) classes.push('eliminated');
-                if (player.left) classes.push('left');
-                if (player.spectator) classes.push('spectator');
-                if (isCurrentTurn && !player.eliminated && !player.left && !player.spectator) classes.push('current-turn');
-
-                let statusBadge = '';
-                let rewardInfo = '';
-                let revivalInfo = '';
-                let kickBtn = '';
-
-                if (player.spectator) {
-                    statusBadge = '<span class="status-badge badge-spectator">观战</span>';
-                } else if (player.eliminated) {
-                    statusBadge = '<span class="status-badge badge-eliminated">已淘汰</span>';
-                    if (player.revivalCount > 0) {
-                        revivalInfo = `<div class="player-revival">已复活${player.revivalCount}次</div>`;
-                    }
-                } else if (player.left) {
-                    statusBadge = `<span class="status-badge badge-left">已离场 (${player.reward}套)</span>`;
-                } else {
-                    statusBadge = '<span class="status-badge badge-alive">存活</span>';
-                    rewardInfo = `<div class="player-reward">可拿走: ${canTake}套</div>`;
-                    if (player.revivalCount > 0) {
-                        revivalInfo = `<div class="player-revival">已复活${player.revivalCount}次</div>`;
-                    }
-                }
-
-                if (showKickBtn && !player.spectator) {
-                    kickBtn = `<button class="kick-btn" onclick="kickPlayer('${id}')">踢出</button>`;
-                }
-
-                return `
-                    <div class="${classes.join(' ')}">
-                        <div class="player-info">
-                            <div class="player-name">${player.name}${isCurrentTurn ? ' 👈' : ''}</div>
-                            ${rewardInfo}
-                            ${revivalInfo}
-                        </div>
-                        <div class="player-actions">
-                            ${statusBadge}
-                            ${kickBtn}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function updateHistory(elementId, history) {
-            const container = document.getElementById(elementId);
-            if (!history || history.length === 0) {
-                container.innerHTML = '<div class="history-item">暂无记录</div>';
-                return;
-            }
-
-            container.innerHTML = history.slice().reverse().map(item => {
-                if (item.action) {
-                    return `<div class="history-item"><strong>${item.player}</strong> ${item.action}</div>`;
-                } else {
-                    return `<div class="history-item"><strong>${item.player}</strong> 猜了 <strong>${item.guess}</strong> - ${item.result}</div>`;
-                }
-            }).join('');
-        }
-    </script>
-</body>
-</html>
+            const canTake = Math.
